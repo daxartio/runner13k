@@ -3,7 +3,7 @@ import State from './state';
 import game from './scenes/game';
 import menu from './scenes/menu';
 
-kontra.assets.load()
+kontra.assets.load('./assets/player.png')
     .then(function () {
         State
             .addScene('menu', menu)
