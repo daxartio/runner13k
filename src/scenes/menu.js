@@ -1,26 +1,23 @@
 import State from '../state';
 
-const ctx = kontra.canvas.getContext("2d");
-ctx.font = '11px serif';
-ctx.textAlign = "center";
-
 
 const menu = kontra.gameLoop({
+    clearCanvas: false,
     update(dt) {
     },
     render() {
-        ctx.fillText("Pause", kontra.canvas.width / 2, kontra.canvas.height / 2);
     }
 });
 
 menu.init = function () {
-    kontra.canvas.style.background = 'black';
-    kontra.keys.bind('esc', function () {
+    kontra.canvas.style.background = '#000';
+    kontra.keys.bind('enter', function () {
         State.switch('game');
     });
+    kontra.drawText('Start', 2, {x: kontra.canvas.width / 2 - 20, y: kontra.canvas.height / 2 - 15}, '#fff');
 };
 menu.destroy = function () {
-    kontra.keys.unbind('esc');
+    kontra.keys.unbind('enter');
 };
 
 export default menu;
