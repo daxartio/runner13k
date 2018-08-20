@@ -1,10 +1,16 @@
 import State from '../state';
 
 let player;
-let enemy;
+let enemies = [];
 let heart;
 let grasses = [];
 let golds = [];
+
+
+let lastEnemyTime = 0;
+let createEnemy;
+let createGold;
+
 
 const game = kontra.gameLoop({
     // clearCanvas: false,
@@ -15,8 +21,14 @@ const game = kontra.gameLoop({
         golds.forEach(gold => {
             gold.update(dt);
         });
-        enemy.update(dt);
+        enemies.forEach(enemy => {
+            enemy.update(dt);
+        });
         player.update(dt);
+
+        createEnemy();
+
+        createGold();
     },
     render() {
         grasses.forEach(grass => {
@@ -25,10 +37,23 @@ const game = kontra.gameLoop({
         golds.forEach(gold => {
             gold.render();
         });
-        enemy.render();
-        player.render();
-        heart.render();
-        kontra.drawText(String(Math.floor(player.score)), 1, {x: 1, y: 1}, '#fff');
+        var objects = [player, ...enemies];
+        objects.sort((a, b) => {
+            if (a.isJump && a.isJump()) {
+                return 1;
+            }
+            if (b.isJump && b.isJump()) {
+                return -1;
+            }
+            return a.y - b.y;
+        });
+        objects.forEach(obj => {
+            obj.render();
+        });
+
+        kontra.drawText(String(Math.floor(player.score)), 1, { x: 1, y: 1 }, '#fff');
+        var h = Array(player.health + 1).join('|');
+        kontra.drawText(h, 1, { x: kontra.canvas.width - (player.health * 3 + player.health), y: 1 }, 'red');
     }
 });
 
@@ -80,11 +105,17 @@ game.load = function () {
         animations: spriteSheet.animations,
         playerState: 'walk',
         prevPlayerState: 'walk',
+        health: 3,
         score: 0,
+        invulnerableTime: 0,
+        invulnerableDuration: 1000,
         attackTime: 0,
         attackDuration: 500,
         jumpTime: 0,
         jumpDuration: 1000,
+        isJump() {
+            return +new Date() - this.jumpTime < this.jumpDuration;
+        },
         collidesWith(object) {
             return this.x < object.x + object.width - 2 &&
                 this.x + this.width - 2 > object.x &&
@@ -94,11 +125,15 @@ game.load = function () {
         update(dt) {
             this.advance(dt);
             let time = +new Date();
-            var isJump, isAttack;
+            var isJump, isAttack, isInvulnerable;
             if (time - this.jumpTime < this.jumpDuration) {
                 isJump = true;
-            } else if (time - this.attackTime < this.attackDuration) {
+            }
+            if (time - this.attackTime < this.attackDuration) {
                 isAttack = true;
+            }
+            if (time - this.invulnerableTime < this.invulnerableDuration) {
+                isInvulnerable = true;
             }
             if (isJump) {
                 this.y = kontra.canvas.height - 20 - 8;
@@ -127,43 +162,66 @@ game.load = function () {
                     this.jumpTime = +new Date();
                 }
             }
-            if (this.collidesWith(enemy)) {
-                if (!isJump && !isAttack) {
-                    enemy.y = 0;
-                    this.x = 0;
-                    this.score = 0;
-                    console.log('Game over');
-                    State.switch('gameover');
+            golds.forEach((gold, index) => {
+                if (this.collidesWith(gold)) {
+                    this.score += 50;
+                    golds.splice(index, 1);
                 }
-            }
+            })
+            enemies.forEach((enemy, index) => {
+                if (this.collidesWith(enemy)) {
+                    if (isAttack) {
+                        enemies.splice(index, 1);
+                    }
+                    if (!isJump && !isAttack && !isInvulnerable) {
+                        this.invulnerableTime = +new Date();
+                        this.health--;
+                        if (this.health <= 0) {
+                            enemy.y = 0;
+                            this.x = 0;
+                            this.score = 0;
+                            this.health = 3;
+                            enemies = [];
+                            console.log('Game over');
+                            State.switch('gameover');
+                        }
+                    }
+                }
+            });
             if (this.prevPlayerState != this.playerState) {
                 this.playAnimation(this.playerState);
                 this.prevPlayerState = this.playerState;
             }
-            this.score += 0.1;
         }
     });
-    enemy = kontra.sprite({
-        type: 'enemy',
-        x: 16,
-        y: 0,
-        animations: spriteSheet.animations,
-        collidesWith(object) {
-            return this.x < object.x + object.width - 2 &&
-                this.x + this.width - 2 > object.x &&
-                this.y < object.y + object.height &&
-                this.y + this.height > object.y;
-        },
-        update(dt) {
-            this.advance(dt);
-            this.y++;
-            if (this.y > kontra.canvas.height) {
-                this.y = -this.height;
-                this.x = kontra.getRandomInt(0, kontra.canvas.width - 16);
-            }
+
+    createEnemy = function () {
+        if (enemies.length < 10 && +new Date() - lastEnemyTime > 1000) {
+            lastEnemyTime = +new Date();
+            var enemy = kontra.sprite({
+                type: 'enemy',
+                x: kontra.getRandomInt(0, kontra.canvas.width - 16),
+                y: kontra.getRandomInt(-kontra.canvas.height, -16),
+                animations: spriteSheet.animations,
+                collidesWith(object) {
+                    return this.x < object.x + object.width - 2 &&
+                        this.x + this.width - 2 > object.x &&
+                        this.y < object.y + object.height &&
+                        this.y + this.height > object.y;
+                },
+                update(dt) {
+                    this.advance(dt);
+                    this.y++;
+                    if (this.y > kontra.canvas.height) {
+                        this.y = -this.height;
+                        this.x = kontra.getRandomInt(0, kontra.canvas.width - 16);
+                    }
+                }
+            });
+            enemy.playAnimation('enemyWalk');
+            enemies.push(enemy);
         }
-    });
-    enemy.playAnimation('enemyWalk');
+    };
 
     heart = kontra.sprite({
         type: 'heart',
@@ -200,16 +258,17 @@ game.load = function () {
         grass.playAnimation('grass');
     });
 
-    for (let i = 0; i < 2; i++) {
-        golds.push(kontra.sprite(getObj(
-            kontra.getRandomInt(0, kontra.canvas.width - 16),
-            kontra.getRandomInt(0, kontra.canvas.height - 16),
-            'gold'
-        )));
-    }
-    golds.forEach(gold => {
-        gold.playAnimation('gold');
-    });
+    createGold = function () {
+        if (golds.length < 2) {
+            var gold = kontra.sprite(getObj(
+                kontra.getRandomInt(0, kontra.canvas.width - 16),
+                kontra.getRandomInt(0, -kontra.canvas.height - 16),
+                'gold'
+            ));
+            gold.playAnimation('gold');
+            golds.push(gold);
+        }
+    };
 }
 
 game.init = function () {

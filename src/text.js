@@ -252,6 +252,13 @@
             [0,0,1],
             [1,1,1]
         ],
+        '|':[
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+            [1,1,1]
+        ],
         ' ': [
             [, ,],
             [, ,],
@@ -261,8 +268,7 @@
         ]
     };
 
-    var canvas = kontra.canvas;
-    var context = canvas.getContext('2d');
+    var context = kontra.context
 
     function draw(string, size, position, fillStyle) {
 
@@ -295,4 +301,9 @@
         }
     }
     kontra.drawText = draw;
+    kontra.drawTextCenter = function(text, size, position, fillStyle) {
+        position = position || {}
+        position.x = kontra.canvas.width / 2 - (text.length * 3 + text.length) * size / 2
+        kontra.drawText(text, size, position, fillStyle);
+    };
 })();
