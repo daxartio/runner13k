@@ -310,7 +310,8 @@
     kontra.drawText = draw;
     kontra.drawTextCenter = function(text, size, position, fillStyle) {
         position = position || {}
-        position.x = kontra.canvas.width / 2 - (text.length * 3 + text.length) * size / 2
+        position.x = position.x || 0;
+        position.x += kontra.canvas.width / 2 - (text.length * 3 + text.length) * size / 2
         kontra.drawText(text, size, position, fillStyle);
     };
 })();

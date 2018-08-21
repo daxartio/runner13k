@@ -1,16 +1,20 @@
 import State from '../state';
 
+const controller = {
+    phase: 'up',
+    x: -1,
+    y: -1,
+};
+
 let player;
-let enemies = [];
 let heart;
+let enemies = [];
 let grasses = [];
 let golds = [];
-
 
 let lastEnemyTime = 0;
 let createEnemy;
 let createGold;
-
 
 const game = kontra.gameLoop({
     // clearCanvas: false,
@@ -29,6 +33,10 @@ const game = kontra.gameLoop({
         createEnemy();
 
         createGold();
+        if (controller.phase === 'down') {
+            player.x += (controller.x - player.x) / Math.abs(controller.x - player.x);
+            player.y += (controller.y - player.y) / Math.abs(controller.y - player.y);
+        }
     },
     render() {
         grasses.forEach(grass => {
@@ -39,12 +47,6 @@ const game = kontra.gameLoop({
         });
         var objects = [player, ...enemies];
         objects.sort((a, b) => {
-            if (a.isJump && a.isJump()) {
-                return 1;
-            }
-            if (b.isJump && b.isJump()) {
-                return -1;
-            }
             return a.y - b.y;
         });
         objects.forEach(obj => {
@@ -107,15 +109,6 @@ game.load = function () {
         prevPlayerState: 'walk',
         health: 3,
         score: 0,
-        invulnerableTime: 0,
-        invulnerableDuration: 1000,
-        attackTime: 0,
-        attackDuration: 500,
-        jumpTime: 0,
-        jumpDuration: 1000,
-        isJump() {
-            return +new Date() - this.jumpTime < this.jumpDuration;
-        },
         collidesWith(object) {
             return this.x < object.x + object.width - 2 &&
                 this.x + this.width - 2 > object.x &&
@@ -124,72 +117,30 @@ game.load = function () {
         },
         update(dt) {
             this.advance(dt);
-            let time = +new Date();
-            var isJump, isAttack, isInvulnerable;
-            if (time - this.jumpTime < this.jumpDuration) {
-                isJump = true;
-            }
-            if (time - this.attackTime < this.attackDuration) {
-                isAttack = true;
-            }
-            if (time - this.invulnerableTime < this.invulnerableDuration) {
-                isInvulnerable = true;
-            }
-            if (isJump) {
-                this.y = kontra.canvas.height - 20 - 8;
-            } else {
-                this.y = kontra.canvas.height - 20;
-            }
 
-            if (!isAttack && !isJump) {
+            this.playerState = 'walk';
+            if (kontra.keys.pressed('left') && player.x > 0) {
+                this.x -= 1;
                 this.playerState = 'walk';
-                if (kontra.keys.pressed('left') && player.x > 0) {
-                    this.x -= 1;
-                    this.playerState = 'walk';
-                }
-                else if (kontra.keys.pressed('right') && this.x + this.width < kontra.canvas.width) {
-                    this.x += 1;
-                    this.playerState = 'walk';
-                }
-                else if (kontra.keys.pressed('x')) {
-                    this.playerState = 'attack';
-                    isAttack = true;
-                    this.attackTime = +new Date();
-                }
-                else if (kontra.keys.pressed('space') && time - this.jumpTime > this.jumpDuration + 200) {
-                    this.playerState = 'jump';
-                    isJump = true;
-                    this.jumpTime = +new Date();
-                }
             }
-            if (!isJump) {
-                golds.forEach((gold, index) => {
-                    if (this.collidesWith(gold)) {
-                        this.score += 50;
-                        golds.splice(index, 1);
-                    }
-                })
+            else if (kontra.keys.pressed('right') && this.x + this.width < kontra.canvas.width) {
+                this.x += 1;
+                this.playerState = 'walk';
             }
-            enemies.forEach((enemy, index) => {
-                if (this.collidesWith(enemy)) {
-                    if (isAttack) {
-                        enemies.splice(index, 1);
-                    }
-                    if (!isJump && !isAttack && !isInvulnerable) {
-                        this.invulnerableTime = +new Date();
-                        this.health--;
-                        if (this.health <= 0) {
-                            enemy.y = 0;
-                            this.x = 0;
-                            this.score = 0;
-                            this.health = 3;
-                            enemies = [];
-                            console.log('Game over');
-                            State.switch('gameover');
-                        }
-                    }
+            if (kontra.keys.pressed('up') && this.y > 0) {
+                this.y -= 1;
+                this.playerState = 'walk';
+            }
+            else if (kontra.keys.pressed('down') && this.y + this.height < kontra.canvas.height) {
+                this.y += 1;
+                this.playerState = 'walk';
+            }
+            golds.forEach((gold, index) => {
+                if (this.collidesWith(gold)) {
+                    this.score += 50;
+                    golds.splice(index, 1);
                 }
-            });
+            })
             if (this.prevPlayerState != this.playerState) {
                 this.playAnimation(this.playerState);
                 this.prevPlayerState = this.playerState;
@@ -281,6 +232,14 @@ game.init = function () {
 };
 game.destroy = function () {
     kontra.keys.unbind('esc');
+};
+game.onDown = function (event) {
+    controller.x = event.x - 7;
+    controller.y = event.y - 7;
+    controller.phase = 'down';
+};
+game.onUp = function (event) {
+    controller.phase = 'up';
 };
 
 export default game;

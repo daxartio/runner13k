@@ -8,7 +8,7 @@ const KONTRA = [
     'assets.js',
     'sprite.js',
     'gameLoop.js',
-    // 'pointer.js',
+    'pointer.js',
     'keyboard.js',
     // 'pool.js',
     // 'quadtree.js',

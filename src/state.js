@@ -1,9 +1,18 @@
 const State = {
     states: [],
+    state: null,
     clear() {
         kontra.context.clearRect(0, 0, kontra.canvas.width, kontra.canvas.height);
     },
     init() {
+        const _this = this;
+        ['onUp', 'onDown'].forEach(function(on){
+            kontra.pointer[on](function (event, object) {
+                if (_this.state && _this.state.scene[on]) {
+                    _this.state.scene[on](event, object);
+                }
+            });
+        });
         return this;
     },
     switch(index) {
@@ -23,6 +32,7 @@ const State = {
                         state.scene.init();
                     }
                     state.scene.start();
+                    this.state = state;
                 }
             })
         } else {
@@ -31,6 +41,7 @@ const State = {
                 state.scene.init();
             }
             state.scene.start();
+            this.state = state;
         }
     },
     addScene(key, scene) {
