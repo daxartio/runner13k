@@ -8,8 +8,13 @@ const State = {
         const _this = this;
         ['onUp', 'onDown'].forEach(function(on){
             kontra.pointer[on](function (event, object) {
-                if (_this.state && _this.state.scene[on]) {
-                    _this.state.scene[on](event, object);
+                let x = event.x - 7;
+                let y = event.y - 7;
+                if (x <= kontra.canvas.width && y <= kontra.canvas.height) {
+                    if (_this.state && _this.state.scene[on]) {
+                        const e = {x, y};
+                        _this.state.scene[on](e, object);
+                    }
                 }
             });
         });

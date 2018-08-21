@@ -34,8 +34,14 @@ const game = kontra.gameLoop({
 
         createGold();
         if (controller.phase === 'down') {
-            player.x += (controller.x - player.x) / Math.abs(controller.x - player.x);
-            player.y += (controller.y - player.y) / Math.abs(controller.y - player.y);
+            let x = controller.x - player.x - player.width / 2;
+            let y = controller.y - player.y - player.height / 2;
+            if (!isNaN(x) && x !== 0) {
+                player.x += x / Math.abs(x);
+            }
+            if (!isNaN(y) && y !== 0) {
+                player.y += y / Math.abs(y);
+            }
         }
     },
     render() {
@@ -234,8 +240,8 @@ game.destroy = function () {
     kontra.keys.unbind('esc');
 };
 game.onDown = function (event) {
-    controller.x = event.x - 7;
-    controller.y = event.y - 7;
+    controller.x = event.x;
+    controller.y = event.y;
     controller.phase = 'down';
 };
 game.onUp = function (event) {
