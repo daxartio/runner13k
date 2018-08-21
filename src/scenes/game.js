@@ -162,12 +162,14 @@ game.load = function () {
                     this.jumpTime = +new Date();
                 }
             }
-            golds.forEach((gold, index) => {
-                if (this.collidesWith(gold)) {
-                    this.score += 50;
-                    golds.splice(index, 1);
-                }
-            })
+            if (!isJump) {
+                golds.forEach((gold, index) => {
+                    if (this.collidesWith(gold)) {
+                        this.score += 50;
+                        golds.splice(index, 1);
+                    }
+                })
+            }
             enemies.forEach((enemy, index) => {
                 if (this.collidesWith(enemy)) {
                     if (isAttack) {
