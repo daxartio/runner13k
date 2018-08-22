@@ -8,7 +8,7 @@ menu.init = function () {
         State.switch('game');
     });
     const textArr = [
-        ['Runner', 3, kontra.canvas.height / 2 - 45, '#CF6A39'],
+        ['Fknight', 3, kontra.canvas.height / 2 - 45, '#CF6A39'],
         ['Press enter', 1, kontra.canvas.height / 2 - 15, '#7B112B'],
         ['esc - pause', 1, kontra.canvas.height / 2 + 10 * 1, '#E79269'],
     ];

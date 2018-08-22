@@ -7,7 +7,6 @@ const controller = {
 };
 
 let player;
-let heart;
 let enemies = [];
 let grasses = [];
 let golds = [];
@@ -72,35 +71,25 @@ game.load = function () {
         frameHeight: 16,
 
         animations: {
-            walk: {
-                frames: [0, 1],
+            player: {
+                frames: [0, 1, 2, 2, 1, 0],
                 frameRate: 8,
             },
             enemyWalk: {
-                frames: [6, 7],
+                frames: [3, 4],
                 frameRate: 6,
             },
-            attack: {
-                frames: [2, 3],
-                frameRate: 8,
-            },
-            jump: {
-                frames: 4,
-                frameRate: 1,
-                loop: false
-            },
-            heart: {
+            enemyDead: {
                 frames: 5,
                 frameRate: 1,
                 loop: false
             },
             gold: {
-                frames: 8,
-                frameRate: 1,
-                loop: false
+                frames: [7, 8],
+                frameRate: 2
             },
             grass: {
-                frames: 9,
+                frames: 6,
                 frameRate: 1,
                 loop: false
             },
@@ -111,35 +100,22 @@ game.load = function () {
         x: 0,
         y: kontra.canvas.height - 16,
         animations: spriteSheet.animations,
-        playerState: 'walk',
-        prevPlayerState: 'walk',
         health: 3,
         score: 0,
-        collidesWith(object) {
-            return this.x < object.x + object.width - 2 &&
-                this.x + this.width - 2 > object.x &&
-                this.y < object.y + object.height &&
-                this.y + this.height > object.y;
-        },
         update(dt) {
             this.advance(dt);
 
-            this.playerState = 'walk';
             if (kontra.keys.pressed('left') && player.x > 0) {
                 this.x -= 1;
-                this.playerState = 'walk';
             }
             else if (kontra.keys.pressed('right') && this.x + this.width < kontra.canvas.width) {
                 this.x += 1;
-                this.playerState = 'walk';
             }
             if (kontra.keys.pressed('up') && this.y > 0) {
                 this.y -= 1;
-                this.playerState = 'walk';
             }
             else if (kontra.keys.pressed('down') && this.y + this.height < kontra.canvas.height) {
                 this.y += 1;
-                this.playerState = 'walk';
             }
             golds.forEach((gold, index) => {
                 if (this.collidesWith(gold)) {
@@ -147,33 +123,47 @@ game.load = function () {
                     golds.splice(index, 1);
                 }
             })
-            if (this.prevPlayerState != this.playerState) {
-                this.playAnimation(this.playerState);
-                this.prevPlayerState = this.playerState;
+            if (this.health <= 0) {
+                State.switch('gameover');
+                this.health = 3;
+                this.score = 0;
+                enemies = [];
             }
         }
     });
+    player.playAnimation('player')
 
     createEnemy = function () {
-        if (enemies.length < 10 && +new Date() - lastEnemyTime > 1000) {
+        if (enemies.length < 5 && +new Date() - lastEnemyTime > 1000) {
             lastEnemyTime = +new Date();
             var enemy = kontra.sprite({
                 type: 'enemy',
                 x: kontra.getRandomInt(0, kontra.canvas.width - 16),
                 y: kontra.getRandomInt(-kontra.canvas.height, -16),
                 animations: spriteSheet.animations,
-                collidesWith(object) {
-                    return this.x < object.x + object.width - 2 &&
-                        this.x + this.width - 2 > object.x &&
-                        this.y < object.y + object.height &&
-                        this.y + this.height > object.y;
-                },
+                d: false,
+                isDead: false,
                 update(dt) {
                     this.advance(dt);
-                    this.y++;
+                    if (this.d) {
+                        this.y += 1;
+                    }
+                    this.d = !this.d;
                     if (this.y > kontra.canvas.height) {
-                        this.y = -this.height;
-                        this.x = kontra.getRandomInt(0, kontra.canvas.width - 16);
+                        if (!this.isDead) {
+                            player.health--;
+                        }
+                        enemies.forEach((enemy, index) => {
+                            if (enemy == this) {
+                                enemies.splice(index, 1);
+                            }
+                        })
+                    }
+                    if (!this.isDead) {
+                        if (this.collidesWith(player)) {
+                            this.isDead = true;
+                            this.playAnimation('enemyDead');
+                        }
                     }
                 }
             });
@@ -182,28 +172,25 @@ game.load = function () {
         }
     };
 
-    heart = kontra.sprite({
-        type: 'heart',
-        x: kontra.canvas.width - 16,
-        y: -1,
-        animations: spriteSheet.animations
-    });
-    heart.playAnimation('heart');
-
     const getObj = function (x, y, type) {
         return {
             type: type,
             x: x,
             y: y,
             animations: spriteSheet.animations,
-            d: false,
+            d: 0,
             update(dt) {
                 this.advance(dt);
-                if (this.d) {
+                if (this.d === 1) {
                     this.y += 1;
+                    this.d = 0;
+                } else {
+                    this.d++;
                 }
-                this.d = !this.d
                 if (this.y > kontra.canvas.height) {
+                    if (this.type === 'gold') {
+                        player.score -= 100;
+                    }
                     this.y = -this.height;
                     this.x = kontra.getRandomInt(0, kontra.canvas.width - 16);
                 }
@@ -228,6 +215,7 @@ game.load = function () {
             golds.push(gold);
         }
     };
+
 }
 
 game.init = function () {
