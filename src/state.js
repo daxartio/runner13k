@@ -1,6 +1,7 @@
 const State = {
     states: [],
     state: null,
+    store: {},
     clear() {
         kontra.context.clearRect(0, 0, kontra.canvas.width, kontra.canvas.height);
     },

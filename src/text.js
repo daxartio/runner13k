@@ -285,7 +285,7 @@
     var context = kontra.context
 
     function draw(string, size, position, fillStyle) {
-
+        string = String(string);
         var needed = [];
         string = string.toUpperCase();
         for (var i = 0; i < string.length; i++) {

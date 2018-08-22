@@ -11,7 +11,8 @@ gameover.init = function () {
         kontra.clear();
         const textArr = [
             ['Game Over', 2, {x: -2, y: kontra.canvas.height / 2 - 15}],
-            ['Press enter', 1, {y: kontra.canvas.height / 2}]
+            ['Press enter', 1, {y: kontra.canvas.height / 2}],
+            [State.store.score + '', 1, {y: kontra.canvas.height / 2 + 10}],
         ];
         textArr.forEach((text) => {
             kontra.drawTextCenter(text[0], text[1], text[2], text[3] || '#fff');

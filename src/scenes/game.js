@@ -58,9 +58,9 @@ const game = kontra.gameLoop({
         objects.forEach(obj => {
             obj.render();
         });
-        let scoreText = String(Math.floor(player.score));
+        let scoreText = Math.floor(player.score);
         if (+new Date() - player.lastScoreTime < 1000) {
-            scoreText += ' ' + (player.lastScore > 0 ? '+' : '') + String(Math.floor(player.lastScore));
+            scoreText += ' ' + (player.lastScore > 0 ? '+' : '') + Math.floor(player.lastScore);
         }
         kontra.drawText(scoreText, 1, { x: 1, y: 1 }, '#fff');
 
@@ -73,6 +73,7 @@ const game = kontra.gameLoop({
 });
 
 game.load = function () {
+    State.store.score = State.store.score || 0;
     const spriteSheet = kontra.spriteSheet({
         image: kontra.getImage('./assets/runner13k.png'),
         frameWidth: 16,
@@ -170,9 +171,15 @@ game.load = function () {
                 y: kontra.getRandomInt(-kontra.canvas.height, -16),
                 animations: spriteSheet.animations,
                 isDead: false,
+                d: 0,
+                reverseSpeed: 1,
                 update(dt) {
                     this.advance(dt);
-                    this.y += 1;
+                    this.d++;
+                    if (this.d === this.reverseSpeed) {
+                        this.y += 1;
+                        this.d = 0;
+                    }
                     if (this.y > kontra.canvas.height) {
                         if (!this.isDead) {
                             player.health--;
@@ -187,6 +194,7 @@ game.load = function () {
                     if (!this.isDead) {
                         if (this.collidesWith(player)) {
                             this.isDead = true;
+                            this.reverseSpeed = 2;
                             this.playAnimation('enemyDead');
                         }
                     }
@@ -250,6 +258,7 @@ game.init = function () {
     });
 };
 game.destroy = function () {
+    State.store.score = player.score;
     kontra.keys.unbind('esc');
 };
 game.onDown = function (event) {
