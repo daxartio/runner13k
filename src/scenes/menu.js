@@ -13,7 +13,7 @@ menu.init = function () {
         ['esc - pause', 1, kontra.canvas.height / 2 + 10 * 1, '#E79269'],
     ];
     textArr.forEach((text) => {
-        kontra.drawTextCenter(text[0], text[1], {y: text[2]}, text[3] || '#fff');
+        kontra.drawTextCenter(text[0], text[1], { y: text[2] }, text[3] || '#fff');
     });
 };
 menu.destroy = function () {

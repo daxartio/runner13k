@@ -31,6 +31,7 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
-    "kontra": "^4.0.0"
+    "kontra": "^4.0.0",
+    "tinymusic": "^1.0.0"
   }
 }

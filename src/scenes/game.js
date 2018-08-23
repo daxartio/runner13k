@@ -1,4 +1,5 @@
 import State from '../state';
+import audio from '../audio';
 
 const controller = {
     phase: 'up',
@@ -256,10 +257,13 @@ game.init = function () {
     kontra.keys.bind('esc', function () {
         State.switch('menu');
     });
+    
+    audio.play();
 };
 game.destroy = function () {
     State.store.score = player.score;
     kontra.keys.unbind('esc');
+    audio.stop();
 };
 game.onDown = function (event) {
     controller.x = event.x;
