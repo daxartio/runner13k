@@ -31,10 +31,12 @@ const game = kontra.gameLoop({
 
         createGold();
         if (deviceorientation.x !== 0 || deviceorientation.y !== 0) {
-            if (deviceorientation.x !== 0)
+            if (deviceorientation.x !== 0) {
                 player.y += deviceorientation.x / Math.abs(deviceorientation.x);
-            if (deviceorientation.y !== 0)
+            }
+            if (deviceorientation.y !== 0) {
                 player.x += deviceorientation.y / Math.abs(deviceorientation.y);
+            }
         }
     },
     render() {
@@ -56,6 +58,8 @@ const game = kontra.gameLoop({
             scoreText += ' ' + (player.lastScore > 0 ? '+' : '') + Math.floor(player.lastScore);
         }
         kontra.drawText(scoreText, 1, { x: 1, y: 1 }, '#fff');
+        kontra.drawText(deviceorientation.x, 1, { x: 1, y: 10 }, '#fff');
+        kontra.drawText(deviceorientation.y, 1, { x: 1, y: 17 }, '#fff');
 
         var h = Array(player.health + 1).join('|');
         kontra.drawText(h, 1, { x: kontra.width - (player.health * 3 + player.health), y: 1 }, 'red');
@@ -152,10 +156,11 @@ game.load = function () {
                 }
             })
             if (this.health <= 0) {
-                State.switch('gameover');
-                this.health = 3;
-                this.score = 0;
-                enemies = [];
+                this.health = 0;
+                // State.switch('gameover');
+                // this.health = 3;
+                // this.score = 0;
+                // enemies = [];
             }
         }
     });
