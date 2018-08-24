@@ -11,8 +11,6 @@ kontra.height = canvas.height / 5;
 context.mozImageSmoothingEnabled = false;  // firefox
 context.imageSmoothingEnabled = false;
 context.scale(5, 5);
-console.log(kontra);
-
 
 kontra.getImage = function (src) {
     const image = new Image();

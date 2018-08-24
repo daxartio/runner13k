@@ -32,9 +32,9 @@ const game = kontra.gameLoop({
         createGold();
         if (deviceorientation.x !== 0 || deviceorientation.y !== 0) {
             if (deviceorientation.x !== 0)
-                player.x += deviceorientation.x / Math.abs(deviceorientation.x);
+                player.y += deviceorientation.x / Math.abs(deviceorientation.x);
             if (deviceorientation.y !== 0)
-                player.y += deviceorientation.y / Math.abs(deviceorientation.y);
+                player.x += deviceorientation.y / Math.abs(deviceorientation.y);
         }
     },
     render() {
@@ -120,16 +120,29 @@ game.load = function () {
         update(dt) {
             this.advance(dt);
 
-            if (kontra.keys.pressed('left') && player.x > 0) {
+            if (this.x + this.width > kontra.width) {
+                this.x = kontra.width - this.width;
+            }
+            if (this.x < 0) {
+                this.x = 0;
+            }
+            if (this.y + this.height > kontra.height) {
+                this.y = kontra.height - this.height;
+            }
+            if (this.y < 0) {
+                this.y = 0;
+            }
+
+            if (kontra.keys.pressed('left')) {
                 this.x -= 1;
             }
-            else if (kontra.keys.pressed('right') && this.x + this.width < kontra.width) {
+            else if (kontra.keys.pressed('right')) {
                 this.x += 1;
             }
-            if (kontra.keys.pressed('up') && this.y > 0) {
+            if (kontra.keys.pressed('up')) {
                 this.y -= 1;
             }
-            else if (kontra.keys.pressed('down') && this.y + this.height < kontra.height) {
+            else if (kontra.keys.pressed('down')) {
                 this.y += 1;
             }
             golds.forEach((gold, index) => {
