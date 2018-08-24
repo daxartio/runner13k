@@ -1,12 +1,6 @@
 import State from '../state';
 import audio from '../audio';
 
-const controller = {
-    phase: 'up',
-    x: -1,
-    y: -1,
-};
-
 let player;
 let damage;
 let enemies = [];
@@ -16,6 +10,8 @@ let golds = [];
 let lastEnemyTime = 0;
 let createEnemy;
 let createGold;
+
+let deviceorientation = { x: 0, y: 0 };
 
 const game = kontra.gameLoop({
     // clearCanvas: false,
@@ -34,15 +30,11 @@ const game = kontra.gameLoop({
         createEnemy();
 
         createGold();
-        if (controller.phase === 'down') {
-            let x = controller.x - player.x - player.width / 2;
-            let y = controller.y - player.y - player.height / 2;
-            if (!isNaN(x) && x !== 0) {
-                player.x += x / Math.abs(x);
-            }
-            if (!isNaN(y) && y !== 0) {
-                player.y += y / Math.abs(y);
-            }
+        if (deviceorientation.x !== 0 || deviceorientation.y !== 0) {
+            if (deviceorientation.x !== 0)
+                player.x += deviceorientation.x / Math.abs(deviceorientation.x);
+            if (deviceorientation.y !== 0)
+                player.y += deviceorientation.y / Math.abs(deviceorientation.y);
         }
     },
     render() {
@@ -256,13 +248,11 @@ game.destroy = function () {
     kontra.keys.unbind('esc');
     audio.stop();
 };
-game.onDown = function (event) {
-    controller.x = event.x;
-    controller.y = event.y;
-    controller.phase = 'down';
+game.onUp = function () {
+    State.switch('menu');
 };
-game.onUp = function (event) {
-    controller.phase = 'up';
+game.deviceorientation = function (e) {
+    deviceorientation = e;
 };
 
 export default game;

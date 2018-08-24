@@ -7,7 +7,14 @@ const State = {
     },
     init() {
         const _this = this;
-        ['onUp', 'onDown'].forEach(function(on){
+        window.addEventListener('deviceorientation', function (event) {
+            let x = event.beta;  // [-180,180]
+            let y = event.gamma; // [-90,90]
+            if (_this.state && _this.state.scene.deviceorientation) {
+                _this.state.scene.deviceorientation({ x, y });
+            }
+        });
+        ['onUp', 'onDown'].forEach(function (on) {
             kontra.pointer[on](function (event, object) {
                 const top = kontra.canvas.offsetTop;
                 const left = kontra.canvas.offsetLeft;
@@ -15,8 +22,7 @@ const State = {
                 let y = Math.floor((event.y - top) / 5);
                 if (x <= kontra.width && y <= kontra.height && x >= 0 && y >= 0) {
                     if (_this.state && _this.state.scene[on]) {
-                        const e = {x, y};
-                        _this.state.scene[on](e, object);
+                        _this.state.scene[on]({ x, y }, object);
                     }
                 }
             });
