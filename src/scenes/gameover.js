@@ -3,16 +3,20 @@ import State from '../state';
 const gameover = kontra.gameLoopEmpty();
 
 gameover.init = function () {
-    kontra.canvas.style.background = '#000';
+    kontra.canvas.style.background = '#66b632ff';
     kontra.keys.bind('enter', function () {
-        State.switch('menu');
+        setTimeout(() => {
+            State.switch('menu');
+        });
     });
     setTimeout(() => {
         kontra.clear();
+        kontra.context.fillStyle = '#000';
+        kontra.context.fillRect(3, 30, kontra.width - 6, kontra.height - 60);
         const textArr = [
-            ['Game Over', 2, {x: -2, y: kontra.canvas.height / 2 - 15}],
-            ['Press enter', 1, {y: kontra.canvas.height / 2}],
-            [State.store.score + '', 1, {y: kontra.canvas.height / 2 + 10}],
+            ['Game Over', 2, { x: -2, y: kontra.height / 2 - 15 }, '#CF6A39'],
+            ['Press enter', 1, { y: kontra.height / 2 }, '#7B112B'],
+            [State.store.score + '', 1, { y: kontra.height / 2 + 10 }],
         ];
         textArr.forEach((text) => {
             kontra.drawTextCenter(text[0], text[1], text[2], text[3] || '#fff');

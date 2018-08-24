@@ -3,15 +3,17 @@ const State = {
     state: null,
     store: {},
     clear() {
-        kontra.context.clearRect(0, 0, kontra.canvas.width, kontra.canvas.height);
+        kontra.context.clearRect(0, 0, kontra.width, kontra.height);
     },
     init() {
         const _this = this;
         ['onUp', 'onDown'].forEach(function(on){
             kontra.pointer[on](function (event, object) {
-                let x = event.x - 7;
-                let y = event.y - 7;
-                if (x <= kontra.canvas.width && y <= kontra.canvas.height) {
+                const top = kontra.canvas.offsetTop;
+                const left = kontra.canvas.offsetLeft;
+                let x = Math.floor((event.x - left) / 5);
+                let y = Math.floor((event.y - top) / 5);
+                if (x <= kontra.width && y <= kontra.height && x >= 0 && y >= 0) {
                     if (_this.state && _this.state.scene[on]) {
                         const e = {x, y};
                         _this.state.scene[on](e, object);

@@ -66,7 +66,7 @@ const game = kontra.gameLoop({
         kontra.drawText(scoreText, 1, { x: 1, y: 1 }, '#fff');
 
         var h = Array(player.health + 1).join('|');
-        kontra.drawText(h, 1, { x: kontra.canvas.width - (player.health * 3 + player.health), y: 1 }, 'red');
+        kontra.drawText(h, 1, { x: kontra.width - (player.health * 3 + player.health), y: 1 }, 'red');
         if (+new Date() - player.lastDamageTime < 500) {
             damage.render();
         }
@@ -75,6 +75,7 @@ const game = kontra.gameLoop({
 
 game.load = function () {
     State.store.score = State.store.score || 0;
+    State.store.bestScore = State.store.bestScore || 0;
     const spriteSheet = kontra.spriteSheet({
         image: kontra.getImage('./assets/runner13k.png'),
         frameWidth: 16,
@@ -108,7 +109,7 @@ game.load = function () {
     player = kontra.sprite({
         type: 'player',
         x: 0,
-        y: kontra.canvas.height - 16,
+        y: kontra.height - 16,
         animations: spriteSheet.animations,
         health: 3,
         score: 0,
@@ -130,13 +131,13 @@ game.load = function () {
             if (kontra.keys.pressed('left') && player.x > 0) {
                 this.x -= 1;
             }
-            else if (kontra.keys.pressed('right') && this.x + this.width < kontra.canvas.width) {
+            else if (kontra.keys.pressed('right') && this.x + this.width < kontra.width) {
                 this.x += 1;
             }
             if (kontra.keys.pressed('up') && this.y > 0) {
                 this.y -= 1;
             }
-            else if (kontra.keys.pressed('down') && this.y + this.height < kontra.canvas.height) {
+            else if (kontra.keys.pressed('down') && this.y + this.height < kontra.height) {
                 this.y += 1;
             }
             golds.forEach((gold, index) => {
@@ -157,8 +158,8 @@ game.load = function () {
 
     damage = kontra.sprite({
         x: 0,
-        y: kontra.canvas.height - 5,
-        width: kontra.canvas.width,
+        y: kontra.height - 5,
+        width: kontra.width,
         height: 5,
         color: '#DC143C'
     });
@@ -168,20 +169,15 @@ game.load = function () {
             lastEnemyTime = +new Date();
             var enemy = kontra.sprite({
                 type: 'enemy',
-                x: kontra.getRandomInt(0, kontra.canvas.width - 16),
-                y: kontra.getRandomInt(-kontra.canvas.height, -16),
+                x: kontra.getRandomInt(0, kontra.width - 16),
+                y: kontra.getRandomInt(-kontra.height, -16),
                 animations: spriteSheet.animations,
                 isDead: false,
-                d: 0,
-                reverseSpeed: 1,
+                speed: 2,
                 update(dt) {
                     this.advance(dt);
-                    this.d++;
-                    if (this.d === this.reverseSpeed) {
-                        this.y += 1;
-                        this.d = 0;
-                    }
-                    if (this.y > kontra.canvas.height) {
+                    this.y += this.speed;
+                    if (this.y > kontra.height) {
                         if (!this.isDead) {
                             player.health--;
                             player.lastDamageTime = +new Date();
@@ -195,7 +191,7 @@ game.load = function () {
                     if (!this.isDead) {
                         if (this.collidesWith(player)) {
                             this.isDead = true;
-                            this.reverseSpeed = 2;
+                            this.speed = 1;
                             this.playAnimation('enemyDead');
                         }
                     }
@@ -212,27 +208,21 @@ game.load = function () {
             x: x,
             y: y,
             animations: spriteSheet.animations,
-            d: 0,
             update(dt) {
                 this.advance(dt);
-                if (this.d === 1) {
-                    this.y += 1;
-                    this.d = 0;
-                } else {
-                    this.d++;
-                }
-                if (this.y > kontra.canvas.height) {
+                this.y += 1;
+                if (this.y > kontra.height) {
                     if (this.type === 'gold') {
                         player.addScore(-100);
                     }
                     this.y = -this.height;
-                    this.x = kontra.getRandomInt(0, kontra.canvas.width - 16);
+                    this.x = kontra.getRandomInt(0, kontra.width - 16);
                 }
             }
         }
     }
-    for (let i = 0; i < kontra.canvas.height / 16; i++) {
-        grasses.push(kontra.sprite(getObj(kontra.getRandomInt(0, kontra.canvas.width - 16), i * 16, 'grass')));
+    for (let i = 0; i < kontra.height / 16; i++) {
+        grasses.push(kontra.sprite(getObj(kontra.getRandomInt(0, kontra.width - 16), i * 16, 'grass')));
     }
     grasses.forEach(grass => {
         grass.playAnimation('grass');
@@ -241,8 +231,8 @@ game.load = function () {
     createGold = function () {
         if (golds.length < 2) {
             var gold = kontra.sprite(getObj(
-                kontra.getRandomInt(0, kontra.canvas.width - 16),
-                kontra.getRandomInt(0, -kontra.canvas.height - 16),
+                kontra.getRandomInt(0, kontra.width - 16),
+                kontra.getRandomInt(0, -kontra.height - 16),
                 'gold'
             ));
             gold.playAnimation('gold');
@@ -257,11 +247,12 @@ game.init = function () {
     kontra.keys.bind('esc', function () {
         State.switch('menu');
     });
-    
+
     audio.play();
 };
 game.destroy = function () {
     State.store.score = player.score;
+    State.store.bestScore = player.score > State.store.bestScore ? player.score : State.store.bestScore;
     kontra.keys.unbind('esc');
     audio.stop();
 };

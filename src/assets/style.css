@@ -1,3 +1,7 @@
+body {
+    text-align: center;
+    background: black;
+}
 canvas {
     background: black;
     image-rendering: -moz-crisp-edges;
