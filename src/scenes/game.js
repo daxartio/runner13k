@@ -15,6 +15,7 @@ let deviceorientation = { x: 0, y: 0 };
 
 const game = kontra.gameLoop({
     // clearCanvas: false,
+    fps: 45,
     update(dt) {
         grasses.forEach(grass => {
             grass.update(dt);
