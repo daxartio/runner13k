@@ -13,10 +13,11 @@ import TinyMusic from 'tinymusic';
 var ac = typeof AudioContext !== 'undefined' ? new AudioContext : new webkitAudioContext,
     when = ac.currentTime,
     tempo = 132,
-    sequence1,
-    sequence2,
-    sequence3,
-    lead = [
+    ttSequence,
+    enemySequence,
+    goldSequence,
+    gameoverSequence,
+    tt = [        
         '-   e',
         'Bb3 e',
         'A3  e',
@@ -25,81 +26,91 @@ var ac = typeof AudioContext !== 'undefined' ? new AudioContext : new webkitAudi
         'A3  e',
         'F3  e',
         'A3  e',
-
-        'D3  e',
-        'F3  e',
-        'G3  e',
-        '-  e',
+    ],
+    enemy = [
+        'A3  s',
+    ],
+    gameover = [
         'E3  e',
         'F3  e',
         'D3  q',
     ],
-    harmony = [
-
-        'G3  e',
-        'A3  e',
-        'Bb3 e',
-        'A3  e',
-        'G3  e',
-        'A3  e',
-        'F3  q',
-
-        'G3  e',
-        'A3  e',
-        'Bb3 e',
-        'A3  e',
-        'G3  s',
-        'A3  s',
-        'G3  e',
-        'F3  q'
-    ],
-    bass = [
-        'D3  q',
-        '-   h',
-        'D3  q',
-
-        'F2  h',
-        'A2  h'
+    gold = [
+        'A3  q',
     ];
 
-sequence1 = new TinyMusic.Sequence(ac, tempo, lead);
-sequence2 = new TinyMusic.Sequence(ac, tempo, harmony);
-sequence3 = new TinyMusic.Sequence(ac, tempo, bass);
+ttSequence = new TinyMusic.Sequence(ac, tempo, tt);
+enemySequence = new TinyMusic.Sequence(ac, tempo, enemy);
+goldSequence = new TinyMusic.Sequence(ac, tempo, gold);
+gameoverSequence = new TinyMusic.Sequence(ac, tempo, gameover);
 
-sequence1.staccato = 0.55;
-sequence2.staccato = 0.55;
-sequence3.staccato = 0.05;
-sequence3.smoothing = 0.4;
+ttSequence.loop = false;
+enemySequence.loop = false;
+goldSequence.loop = false;
+gameoverSequence.loop = false;
 
-sequence1.gain.gain.value = 1.0 / 2;
-sequence2.gain.gain.value = 0.8 / 2;
-sequence3.gain.gain.value = 0.65 / 2;
+ttSequence.staccato = 0.55;
+enemySequence.staccato = 0.55;
+goldSequence.staccato = 0.55;
+gameoverSequence.staccato = 0.55;
 
-sequence1.mid.frequency.value = 600;
-sequence1.mid.gain.value = 6;
-sequence2.mid.frequency.value = 1200;
-sequence3.mid.gain.value = 3;
-sequence3.bass.gain.value = 6;
-sequence3.bass.frequency.value = 80;
-sequence3.mid.gain.value = -6;
-sequence3.mid.frequency.value = 500;
-sequence3.treble.gain.value = -2;
-sequence3.treble.frequency.value = 1400;
+ttSequence.gain.gain.value = 1.0 / 2;
+enemySequence.gain.gain.value = 1.0 / 2;
+goldSequence.gain.gain.value = 1.0 / 2;
+gameoverSequence.gain.gain.value = 1.0 / 2;
 
-function play() {
+ttSequence.mid.frequency.value = 600;
+ttSequence.mid.gain.value = 6;
+enemySequence.mid.frequency.value = 600;
+enemySequence.mid.gain.value = 6;
+goldSequence.mid.frequency.value = 600;
+goldSequence.mid.gain.value = 6;
+gameoverSequence.mid.frequency.value = 600;
+gameoverSequence.mid.gain.value = 6;
+
+function ttPlay() {
     when = ac.currentTime;
-    sequence1.play(when);
-    sequence2.play(when + (60 / tempo) * 16);
-    sequence3.play(when);
+    ttSequence.play(when);
 }
 
-function stop() {
-    sequence1.stop();
-    sequence2.stop();
-    sequence3.stop();
+function ttStop() {
+    ttSequence.stop();
+}
+
+function enemyKillPlay() {
+    when = ac.currentTime;
+    enemySequence.play(when);
+}
+
+function enemyKillStop() {
+    enemySequence.stop();
+}
+
+function goldPlay() {
+    when = ac.currentTime;
+    goldSequence.play(when);
+}
+
+function goldStop() {
+    goldSequence.stop();
+}
+
+function gameoverPlay() {
+    when = ac.currentTime;
+    gameoverSequence.play(when);
+}
+
+function gameoverStop() {
+    gameoverSequence.stop();
 }
 
 export default {
-    play,
-    stop
+    ttPlay,
+    ttStop,
+    enemyKillPlay,
+    enemyKillStop,
+    goldPlay,
+    goldStop,
+    gameoverPlay,
+    gameoverStop,
 };

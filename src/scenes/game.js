@@ -150,11 +150,14 @@ game.load = function () {
             }
             golds.forEach((gold, index) => {
                 if (this.collidesWith(gold)) {
+                    audio.goldStop();
+                    audio.goldPlay();
                     this.addScore(50);
                     golds.splice(index, 1);
                 }
             })
             if (this.health <= 0) {
+                audio.gameoverPlay();
                 State.switch('gameover');
                 this.health = 3;
                 this.score = 0;
@@ -201,6 +204,8 @@ game.load = function () {
                             this.isDead = true;
                             this.speed = 1;
                             this.playAnimation('enemyDead');
+                            audio.enemyKillStop();
+                            audio.enemyKillPlay();
                         }
                     }
                 }
@@ -255,14 +260,11 @@ game.init = function () {
     kontra.keys.bind('esc', function () {
         State.switch('menu');
     });
-
-    audio.play();
 };
 game.destroy = function () {
     State.store.score = player.score;
     State.store.bestScore = player.score > State.store.bestScore ? player.score : State.store.bestScore;
     kontra.keys.unbind('esc');
-    audio.stop();
 };
 game.onUp = function () {
     State.switch('menu');

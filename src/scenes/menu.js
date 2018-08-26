@@ -1,4 +1,5 @@
 import State from '../state';
+import audio from '../audio';
 
 const deviceTextArray = ['\\', '=', '/', '='];
 let deviceTextState = 0;
@@ -32,6 +33,8 @@ const menu = kontra.gameLoop({
 });
 
 menu.init = function () {
+    audio.ttStop();
+    audio.ttPlay();
     kontra.canvas.style.background = '#66b632ff';
     kontra.keys.bind('enter', function () {
         setTimeout(() => {
