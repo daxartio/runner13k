@@ -2,6 +2,7 @@ import State from '../state';
 import audio from '../audio';
 
 let player;
+let swordRoll;
 let damage;
 let enemies = [];
 let grasses = [];
@@ -27,6 +28,7 @@ const game = kontra.gameLoop({
             enemy.update(dt);
         });
         player.update(dt);
+        swordRoll.update(dt);
 
         createEnemy();
 
@@ -47,7 +49,7 @@ const game = kontra.gameLoop({
         golds.forEach(gold => {
             gold.render();
         });
-        var objects = [player, ...enemies];
+        var objects = [player, swordRoll, ...enemies];
         objects.sort((a, b) => {
             return a.y - b.y;
         });
@@ -55,14 +57,14 @@ const game = kontra.gameLoop({
             obj.render();
         });
         let scoreText = Math.floor(player.score);
-        if (+new Date() - player.lastScoreTime < 1000) {
+        if (Date.now() - player.lastScoreTime < 1000) {
             scoreText += ' ' + (player.lastScore > 0 ? '+' : '') + Math.floor(player.lastScore);
         }
         kontra.drawText(scoreText, 1, { x: 1, y: 1 }, '#fff');
 
         var h = Array(player.health + 1).join('|');
         kontra.drawText(h, 1, { x: kontra.width - (player.health * 3 + player.health), y: 1 }, 'red');
-        if (+new Date() - player.lastDamageTime < 500) {
+        if (Date.now() - player.lastDamageTime < 500) {
             damage.render();
         }
     }
@@ -81,21 +83,30 @@ game.load = function () {
                 frames: [0, 1, 2, 2, 1, 0],
                 frameRate: 8,
             },
+            playerRotation: {
+                frames: [0, 1, 2, 2, 3, 4, 0],
+                frameRate: 8,
+            },
+            swordRoll: {
+                frames: 5,
+                frameRate: 8,
+                loop: false
+            },
             enemyWalk: {
-                frames: [3, 4],
+                frames: [6, 7],
                 frameRate: 6,
             },
             enemyDead: {
-                frames: 5,
+                frames: 8,
                 frameRate: 1,
                 loop: false
             },
             gold: {
-                frames: [7, 8],
+                frames: [10, 11],
                 frameRate: 2
             },
             grass: {
-                frames: 6,
+                frames: 9,
                 frameRate: 1,
                 loop: false
             },
@@ -113,12 +124,12 @@ game.load = function () {
         lastScoreTime: 0,
         addScore(score) {
             this.score += score;
-            if (+new Date() - this.lastScoreTime < 1000) {
+            if (Date.now() - this.lastScoreTime < 1000) {
                 this.lastScore += score;
             } else {
                 this.lastScore = score;
             }
-            this.lastScoreTime = +new Date();
+            this.lastScoreTime = Date.now();
         },
         update(dt) {
             this.advance(dt);
@@ -158,7 +169,7 @@ game.load = function () {
             })
             if (this.health <= 0) {
                 audio.gameoverPlay();
-                State.switch('gameover');
+                // State.switch('gameover');
                 this.health = 3;
                 this.score = 0;
                 enemies = [];
@@ -166,6 +177,15 @@ game.load = function () {
         }
     });
     player.playAnimation('player')
+
+    swordRoll = kontra.sprite({
+        type: 'swordRoll',
+        x: 45,
+        y: kontra.height - 16 - 50,
+        animations: spriteSheet.animations
+    });
+
+    swordRoll.playAnimation('swordRoll')
 
     damage = kontra.sprite({
         x: 0,
@@ -176,8 +196,8 @@ game.load = function () {
     });
 
     createEnemy = function () {
-        if (enemies.length < 5 && +new Date() - lastEnemyTime > 1000) {
-            lastEnemyTime = +new Date();
+        if (enemies.length < 5 && Date.now() - lastEnemyTime > 1000) {
+            lastEnemyTime = Date.now();
             var enemy = kontra.sprite({
                 type: 'enemy',
                 x: kontra.getRandomInt(0, kontra.width - 16),
@@ -191,7 +211,7 @@ game.load = function () {
                     if (this.y > kontra.height) {
                         if (!this.isDead) {
                             player.health--;
-                            player.lastDamageTime = +new Date();
+                            player.lastDamageTime = Date.now();
                         }
                         enemies.forEach((enemy, index) => {
                             if (enemy == this) {
