@@ -28,7 +28,9 @@ const game = kontra.gameLoop({
             enemy.update(dt);
         });
         player.update(dt);
-        swordRoll.update(dt);
+        if (player.swordRoll) {
+            swordRoll.update(dt);
+        }
 
         createEnemy();
 
@@ -49,7 +51,10 @@ const game = kontra.gameLoop({
         golds.forEach(gold => {
             gold.render();
         });
-        var objects = [player, swordRoll, ...enemies];
+        const objects = [player, ...enemies];
+        if (player.swordRoll) {
+            objects.push(swordRoll);
+        }
         objects.sort((a, b) => {
             return a.y - b.y;
         });
@@ -62,10 +67,18 @@ const game = kontra.gameLoop({
         }
         kontra.drawText(scoreText, 1, { x: 1, y: 1 }, '#fff');
 
-        var h = Array(player.health + 1).join('|');
+        const h = Array(player.health + 1).join('|');
         kontra.drawText(h, 1, { x: kontra.width - (player.health * 3 + player.health), y: 1 }, 'red');
         if (Date.now() - player.lastDamageTime < 500) {
             damage.render();
+        }
+
+        let time = player.swordRollExpiration + player.swordRollTime - Date.now();
+        if (time > 0) {
+            kontra.drawText(Math.round(time / 1000), 1, { x: kontra.width / 2, y: 1 }, '#00719dff');
+        } else {
+            kontra.drawText('$', 1, { x: kontra.width / 2, y: 1 }, '#6fddd5ff'); // #00abc4ff #00719dff
+            kontra.drawText('*', 1, { x: kontra.width / 2, y: 1 }, '#00abc4ff'); // #00abc4ff #00719dff
         }
     }
 });
@@ -88,25 +101,24 @@ game.load = function () {
                 frameRate: 8,
             },
             swordRoll: {
-                frames: 5,
-                frameRate: 8,
-                loop: false
+                frames: [5, 6, 7, 8],
+                frameRate: 4,
             },
             enemyWalk: {
-                frames: [6, 7],
+                frames: [9, 10],
                 frameRate: 6,
             },
             enemyDead: {
-                frames: 8,
+                frames: 11,
                 frameRate: 1,
                 loop: false
             },
             gold: {
-                frames: [10, 11],
+                frames: [13, 14],
                 frameRate: 2
             },
             grass: {
-                frames: 9,
+                frames: 12,
                 frameRate: 1,
                 loop: false
             },
@@ -117,6 +129,9 @@ game.load = function () {
         x: 0,
         y: kontra.height - 16,
         animations: spriteSheet.animations,
+        swordRoll: false,
+        swordRollTime: 5000,
+        swordRollExpiration: 0,
         health: 3,
         score: 0,
         lastDamageTime: 0,
@@ -130,6 +145,14 @@ game.load = function () {
                 this.lastScore = score;
             }
             this.lastScoreTime = Date.now();
+        },
+        skill() {
+            if (!this.swordRoll && Date.now() > this.swordRollExpiration + this.swordRollTime) {
+                this.swordRoll = true;
+                swordRoll.radius = 0;
+                this.playAnimation('playerRotation');
+                this.swordRollExpiration = Date.now() + this.swordRollTime;
+            }
         },
         update(dt) {
             this.advance(dt);
@@ -147,6 +170,14 @@ game.load = function () {
                 this.y = 0;
             }
 
+            if (this.swordRoll && Date.now() > this.swordRollExpiration) {
+                this.swordRoll = false;
+                this.playAnimation('player');
+            }
+
+            if (kontra.keys.pressed('space')) {
+                this.skill();
+            }
             if (kontra.keys.pressed('left')) {
                 this.x -= 1;
             }
@@ -169,9 +200,11 @@ game.load = function () {
             })
             if (this.health <= 0) {
                 audio.gameoverPlay();
-                // State.switch('gameover');
+                State.switch('gameover');
                 this.health = 3;
                 this.score = 0;
+                this.swordRollExpiration = 0;
+                this.swordRoll = false;
                 enemies = [];
             }
         }
@@ -180,9 +213,22 @@ game.load = function () {
 
     swordRoll = kontra.sprite({
         type: 'swordRoll',
-        x: 45,
-        y: kontra.height - 16 - 50,
-        animations: spriteSheet.animations
+        x: 0,
+        y: 0,
+        animations: spriteSheet.animations,
+        radius: 0,
+        maxRadius: 26,
+        angle: 0,
+        speed: 4,
+        update(dt) {
+            this.advance(dt);
+            if (this.radius < this.maxRadius) {
+                this.radius++;
+            }
+            this.angle -= dt;
+            this.x = Math.cos(this.angle * this.speed) * this.radius + player.x;
+            this.y = Math.sin(this.angle * this.speed) * this.radius + player.y;
+        }
     });
 
     swordRoll.playAnimation('swordRoll')
@@ -220,7 +266,7 @@ game.load = function () {
                         })
                     }
                     if (!this.isDead) {
-                        if (this.collidesWith(player)) {
+                        if (this.collidesWith(player) || (this.collidesWith(swordRoll) && player.swordRoll)) {
                             this.isDead = true;
                             this.speed = 1;
                             this.playAnimation('enemyDead');
@@ -287,7 +333,7 @@ game.destroy = function () {
     kontra.keys.unbind('esc');
 };
 game.onUp = function () {
-    State.switch('menu');
+    player.skill();
 };
 game.deviceorientation = function (e) {
     deviceorientation = e;

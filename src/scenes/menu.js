@@ -20,7 +20,7 @@ const menu = kontra.gameLoop({
             ['FKnight', 3, {x: -3, y: kontra.height / 2 - 30}, '#CF6A39'],
             ['Press enter', 1, {y: kontra.height / 2}, '#7B112B'],
             ['LRUD - move', 1, {x: -1, y: kontra.height / 2 + 10 * 1}, '#E79269'],
-            ['esc - pause', 1, {x: 1, y: kontra.height / 2 + 10 * 2}, '#E79269'],
+            ['space - skill', 1, {x: 1, y: kontra.height / 2 + 10 * 2}, '#E79269'],
             [deviceTextArray[deviceTextState], 3, {x: -2, y: kontra.height / 2 + 10 * 5}, '#000'],
         ];
         if (State.store.bestScore > 0) {
