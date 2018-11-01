@@ -11,17 +11,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/daxrt/runner13k.git"
+    "url": "git+https://github.com/daxartio/runner13k.git"
   },
   "keywords": [
     "JS13kGames"
   ],
   "author": "Danil Akhtarov",
-  "license": "MIT",
+  "license": "GNU GPL v3",
   "bugs": {
-    "url": "https://github.com/daxrt/runner13k/issues"
+    "url": "https://github.com/daxartio/runner13k/issues"
   },
-  "homepage": "https://github.com/daxrt/runner13k#readme",
+  "homepage": "https://github.com/daxartio/runner13k#readme",
   "devDependencies": {
     "copy-webpack-plugin": "^4.5.2",
     "dotenv": "^6.0.0",
